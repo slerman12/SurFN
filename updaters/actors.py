@@ -28,7 +28,7 @@ class StochasticPolicyGradientSurFN(updaters.StochasticPolicyGradient):
             distributions = self.model.actor(observations)
             new_log_probs = distributions.log_prob(actions).sum(dim=-1)
 
-            fittest = surfn.get_fittest(self.model.actor, new_log_probs, advantages)
+            surfn.get_fittest(self.model.actor, new_log_probs, advantages)
             self.optimizer.zero_grad()
 
             loss = -(advantages * new_log_probs).mean()
@@ -40,8 +40,6 @@ class StochasticPolicyGradientSurFN(updaters.StochasticPolicyGradient):
             if self.gradient_clip > 0:
                 torch.nn.utils.clip_grad_norm_(
                     self.variables, self.gradient_clip)
-
-            surfn.save_fittest(self.model.actor, fittest)
 
             self.optimizer.step()
 
