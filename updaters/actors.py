@@ -1,24 +1,15 @@
 import torch
-
-from tonic.torch import models, updaters  # noqa
-
+from tonic.torch import models, updaters
 import autograd_hacks
+import surfn
 
 
 FLOAT_EPSILON = 1e-8
 
 
-class StochasticPolicyGradientSurFN2:
-    def __init__(self, optimizer=None, entropy_coeff=0, gradient_clip=0):
-        self.optimizer = optimizer or (
-            lambda params: torch.optim.Adam(params, lr=3e-4))
-        self.entropy_coeff = entropy_coeff
-        self.gradient_clip = gradient_clip
-
+class StochasticPolicyGradientSurFN(updaters.StochasticPolicyGradient):
     def initialize(self, model):
-        self.model = model
-        self.variables = models.trainable_variables(self.model.actor)
-        self.optimizer = self.optimizer(self.variables)
+        super(StochasticPolicyGradientSurFN, self).initialize(model)
         autograd_hacks.add_hooks(self.model.actor)
 
     def __call__(self, observations, actions, advantages, log_probs):
@@ -34,36 +25,10 @@ class StochasticPolicyGradientSurFN2:
             self.optimizer.zero_grad()
             autograd_hacks.clear_backprops(self.model.actor)
 
-            # autograd_hacks.add_hooks(self.model.actor)
             distributions = self.model.actor(observations)
             new_log_probs = distributions.log_prob(actions).sum(dim=-1)
 
-            fittest = get_fittest(new_log_probs)
-
-            importances = new_log_probs.sum()
-
-            importances.backward(retain_graph=True)
-            autograd_hacks.compute_grad1(self.model.actor)
-
-            params = torch.cat([torch.cat([param.grad1.flatten(start_dim=1) for param in layer.parameters()], dim=1)
-                                for layer in self.model.actor.modules() if autograd_hacks.is_supported(layer)], dim=1)
-            # ReLU?
-            params = torch.relu(params)
-            grads = params.sum(dim=0)
-            grads_advantages = torch.sum(params * advantages[:, None], dim=0)
-
-            fitness = grads_advantages / grads
-            fitness[torch.isnan(fitness)] = 0
-            selection_rate = 0.5
-            num_fittest = max(1, int(selection_rate * fitness.shape[0]))
-            logits = fitness - min(fitness) + 0.001
-            probas = logits / torch.sum(logits)
-            indices = torch.arange(fitness.shape[0])
-            idx = probas.multinomial(num_samples=num_fittest, replacement=False)
-            indices = indices[idx]
-            fittest = torch.zeros(fitness.shape[0], dtype=torch.bool)
-            fittest[indices] = True
-
+            fittest = surfn.get_fittest(self.model.actor, new_log_probs, advantages)
             self.optimizer.zero_grad()
 
             loss = -(advantages * new_log_probs).mean()
@@ -76,11 +41,7 @@ class StochasticPolicyGradientSurFN2:
                 torch.nn.utils.clip_grad_norm_(
                     self.variables, self.gradient_clip)
 
-            params = torch.cat([torch.cat([param.grad.flatten() for param in layer.parameters()])
-                                for layer in self.model.actor.modules() if autograd_hacks.is_supported(layer)])
-            for i, param in enumerate(params):
-                if fittest[i]:
-                    param.grad = None
+            surfn.save_fittest(self.model.actor, fittest)
 
             self.optimizer.step()
 
@@ -92,103 +53,13 @@ class StochasticPolicyGradientSurFN2:
         return dict(loss=loss, kl=kl, entropy=entropy, std=std)
 
 
-class StochasticPolicyGradientSurFN:
-    def __init__(self, optimizer=None, entropy_coeff=0, gradient_clip=0):
-        self.optimizer = optimizer or (
-            lambda params: torch.optim.Adam(params, lr=3e-4))
-        self.entropy_coeff = entropy_coeff
-        self.gradient_clip = gradient_clip
-
+class ClippedRatioSurFN(updaters.ClippedRatio):
     def initialize(self, model):
-        self.model = model
-        self.variables = models.trainable_variables(self.model.actor)
-        self.optimizer = self.optimizer(self.variables)
+        super(ClippedRatioSurFN, self).initialize(model)
+        autograd_hacks.add_hooks(self.model.actor)
 
-    def __call__(self, observations, actions, advantages, log_probs):
-        if (advantages == 0.).all():
-            loss = torch.as_tensor(0., dtype=torch.float32)
-            kl = torch.as_tensor(0., dtype=torch.float32)
-            with torch.no_grad():
-                distributions = self.model.actor(observations)
-                entropy = distributions.entropy().mean()
-                std = distributions.stddev.mean()
-
-        else:
-            def gradient(y, x, grad_outputs=None):
-                """Compute dy/dx @ grad_outputs"""
-                if grad_outputs is None:
-                    grad_outputs = torch.ones_like(y)
-                grad = torch.autograd.grad(y, [x], grad_outputs=grad_outputs, create_graph=True)[0]
-                return grad
-
-            self.optimizer.zero_grad()
-            print(observations.shape)
-            distributions = self.model.actor(observations)
-            new_log_probs = distributions.log_prob(actions).sum(dim=-1)
-
-            for i, batch_item in enumerate(new_log_probs):
-                # ReLU?
-                grad = torch.relu(torch.cat([gradient(new_log_probs, param).flatten() for param in self.variables]))
-                if i == 0:
-                    grads = grad
-                    grads_advantages = grad * advantages[i]
-                else:
-                    grads += grad
-                    grads_advantages += grad * advantages[i]
-
-            fitness = grads_advantages / grads
-            fitness[torch.isnan(fitness)] = 0
-            selection_rate = 0.5
-            num_fittest = max(1, int(selection_rate * fitness.shape[0]))
-            logits = fitness - min(fitness) + 0.001
-            probas = logits / torch.sum(logits)
-            indices = torch.arange(fitness.shape[0])
-            idx = probas.multinomial(num_samples=num_fittest, replacement=False)
-            indices = indices[idx]
-            fittest = torch.zeros(fitness.shape[0], dtype=torch.bool)
-            fittest[indices] = True
-
-            loss = -(advantages * new_log_probs).mean()
-            entropy = distributions.entropy().mean()
-            if self.entropy_coeff != 0:
-                loss -= self.entropy_coeff * entropy
-
-            loss.backward()
-            if self.gradient_clip > 0:
-                torch.nn.utils.clip_grad_norm_(
-                    self.variables, self.gradient_clip)
-
-            params = torch.cat([param.flatten() for param in self.variables])
-            for i, param in enumerate(params):
-                if fittest[i]:
-                    param.grad = None
-
-            self.optimizer.step()
-
-            loss = loss.detach()
-            kl = (log_probs - new_log_probs).mean().detach()
-            entropy = entropy.detach()
-            std = distributions.stddev.mean().detach()
-
-        return dict(loss=loss, kl=kl, entropy=entropy, std=std)
-
-
-class ClippedRatio:
-    def __init__(
-        self, optimizer=None, ratio_clip=0.2, kl_threshold=0.015,
-        entropy_coeff=0, gradient_clip=0
-    ):
-        self.optimizer = optimizer or (
-            lambda params: torch.optim.Adam(params, lr=3e-4))
-        self.ratio_clip = ratio_clip
-        self.kl_threshold = kl_threshold
-        self.entropy_coeff = entropy_coeff
-        self.gradient_clip = gradient_clip
-
-    def initialize(self, model):
-        self.model = model
-        self.variables = models.trainable_variables(self.model.actor)
-        self.optimizer = self.optimizer(self.variables)
+    def reset(self):
+        self.is_fittest_computed = False
 
     def __call__(self, observations, actions, advantages, log_probs):
         if (advantages == 0.).all():
@@ -202,8 +73,15 @@ class ClippedRatio:
 
         else:
             self.optimizer.zero_grad()
+            autograd_hacks.clear_backprops(self.model.actor)
+
             distributions = self.model.actor(observations)
             new_log_probs = distributions.log_prob(actions).sum(dim=-1)
+
+            self.is_fittest_computed or surfn.get_fittest(self.model.actor, new_log_probs, advantages, seed=self.seed)
+            self.is_fittest_computed or self.optimizer.zero_grad()
+            self.is_fittest_computed = True
+
             ratios_1 = torch.exp(new_log_probs - log_probs)
             surrogates_1 = advantages * ratios_1
             ratio_low = 1 - self.ratio_clip
@@ -219,6 +97,9 @@ class ClippedRatio:
             if self.gradient_clip > 0:
                 torch.nn.utils.clip_grad_norm_(
                     self.variables, self.gradient_clip)
+
+            # surfn.save_fittest(self.model.actor, self.fittest)
+
             self.optimizer.step()
 
             loss = loss.detach()
