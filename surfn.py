@@ -100,8 +100,8 @@ def get_fittest(policy, log_probs, advantages, selection_rate=0.9, seed=None):
     # seed and torch.random.manual_seed (1010)
     # selected = logits.multinomial(num_samples=num_fittest, replacement=False)  # changes seed
     # seed and torch.random.manual_seed(seed)
-    fittest = torch.ones(fitness.shape[0], dtype=torch.bool)
-    # fittest[selected] = True
+    fittest = torch.zeros(fitness.shape[0], dtype=torch.bool)
+    fittest[selected] = True
 
     handles = []
     fitness_size = 0
