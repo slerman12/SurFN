@@ -58,7 +58,8 @@ class ClippedRatioSurFN(updaters.ClippedRatio):
         super(ClippedRatioSurFN, self).initialize(model)
         autograd_hacks.add_hooks(self.model.actor)
 
-    def reset(self):
+    def reset(self, seed):
+        self.seed = seed
         self.is_fittest_computed = False
 
     def __call__(self, observations, actions, advantages, log_probs):
