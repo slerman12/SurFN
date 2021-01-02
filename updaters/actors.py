@@ -97,8 +97,6 @@ class ClippedRatioSurFN(updaters.ClippedRatio):
                 torch.nn.utils.clip_grad_norm_(
                     self.variables, self.gradient_clip)
 
-            # surfn.save_fittest(self.model.actor, self.fittest)
-
             self.optimizer.step()
 
             loss = loss.detach()

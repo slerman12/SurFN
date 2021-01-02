@@ -3,7 +3,7 @@ import numpy as np
 import autograd_hacks
 
 
-def get_fittest(policy, log_probs, advantages, selection_rate=0.1, seed=None):
+def get_fittest(policy, log_probs, advantages, selection_rate=0.04, seed=None):
     """
     Get boolean vector of whether each policy parameter belongs to the fittest.
 
@@ -24,32 +24,43 @@ def get_fittest(policy, log_probs, advantages, selection_rate=0.1, seed=None):
     autograd_hacks.compute_grad1(policy)
 
     # todo abs val instead of relu and softmax * advantages for fitness
-    grads = torch.relu(torch.cat([param.grad1.flatten(start_dim=1) for param in policy.parameters()
-                                  if hasattr(param, 'grad1')], dim=1))
+    grads = torch.cat([param.grad1.flatten(start_dim=1) for param in policy.parameters()
+                       if hasattr(param, 'grad1')], dim=1)
+    credit = torch.relu(grads)
 
-    grads_sum = grads.sum(dim=0)
-    advantages = advantages.view([grads.shape[0]] + [1] * (len(grads.shape) - 1))
-    grads_advantages_sum = torch.sum(grads * advantages, dim=0)
+    credit_sum = credit.sum(dim=0)
+    advantages = advantages.view([credit.shape[0]] + [1] * (len(credit.shape) - 1))
+    credit_advantages_sum = torch.sum(credit * advantages, dim=0)
 
-    fitness = grads_advantages_sum / grads_sum
+    fitness = credit_advantages_sum / credit_sum
     # todo compatibility with negative rewards?
-    fitness[torch.isnan(fitness)] = 0
+    fitness[torch.isnan(fitness)] = 0  # todo -inf ?
 
-    num_fittest = max(1, int(selection_rate * fitness.shape[0]))
+    num_selected = max(1, int(selection_rate * fitness.shape[0]))
+    # _, selected = torch.topk(fitness, num_selected)
     logits = fitness - min(fitness) + 0.001
-    probas = logits / torch.sum(logits)
-    selected = np.random.choice(a=fitness.shape[0], size=num_fittest, replace=False, p=probas.numpy())
+
+    # todo abs, sep back on ent after cl, momentum,pro temporary/dec, softmax, crit, diff selrs, dec-r, r-ns,
+    logits = logits ** 2
+
+    # logits = torch.ones_like(logits)
+
+    # credit_sum[torch.isnan(fitness)] = 0
+    # logits = credit_sum - min(credit_sum) + 0.001
+
+    probas = logits / torch.sum(logits)  # todo mult to dirc
+    selected = np.random.choice(a=fitness.shape[0], size=num_selected, replace=False, p=probas.numpy())
     # seed is not None and torch.random.manual_seed (1010)
-    # selected = logits.multinomial(num_samples=num_fittest, replacement=False)  # changes seed
+    # selected = logits.multinomial(num_samples=num_selected, replacement=False)  # changes seed
     # seed is not None and torch.random.manual_seed(seed)
-    fittest = torch.zeros(fitness.shape[0], dtype=torch.bool)
-    fittest[selected] = True
+    is_fittest = torch.zeros(fitness.shape[0], dtype=torch.bool)
+    is_fittest[selected] = True
 
     handles = []
     fitness_size = 0
     for param in policy.parameters():
         if hasattr(param, 'grad1'):
-            param_fittest = fittest[fitness_size:fitness_size + np.prod(param.shape)].view(param.shape)
+            param_fittest = is_fittest[fitness_size:fitness_size + np.prod(param.shape)].view(param.shape)
             handle = param.register_hook(get_hook(param_fittest))
             handles.append(handle)
             fitness_size += np.prod(param.shape)
@@ -57,16 +68,16 @@ def get_fittest(policy, log_probs, advantages, selection_rate=0.1, seed=None):
     policy.__dict__.setdefault('surfn_hooks', []).extend(handles)
 
 
-def get_hook(fittest):
+def get_hook(is_fittest):
     """
     Get hook to nullify/freeze gradients for the fittest policy parameters.
 
     Args:
-        fittest: boolean vector of whether each policy parameter belongs to the fittest
+        is_fittest: boolean vector of whether each policy parameter belongs to the fittest
     """
 
     def hook(grad):
         grad = grad.clone()
-        grad[fittest] = 0
+        grad[is_fittest] = 0
         return grad
     return hook
