@@ -10,7 +10,6 @@ from tonic.train import train
 
 
 Path('./results').mkdir(exist_ok=True)
-os.chdir('./results')
 
 
 if __name__ == '__main__':
@@ -29,4 +28,5 @@ if __name__ == '__main__':
     parser.add_argument('--name')
     args = vars(parser.parse_args())
     logger.initialize(task.get_logger())
+    os.chdir('./results')
     train(**args)
