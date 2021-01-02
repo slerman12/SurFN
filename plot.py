@@ -16,7 +16,7 @@ snapshots_path.mkdir(exist_ok=True)
 
 if __name__ == '__main__':
     # Argument parsing.
-    task = Task.init(project_name="SurF'N", task_name="trains_plot", output_uri=str(snapshots_path))
+    task = Task.init(project_name="SurF'N", task_name="plot", output_uri=str(snapshots_path))
     parser = argparse.ArgumentParser()
     parser.add_argument('--paths', nargs='+', default=[])
     parser.add_argument('--x_axis', default='train/steps')
