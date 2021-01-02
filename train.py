@@ -9,12 +9,13 @@ import os
 from tonic.train import train
 
 
-Path('./results').mkdir(exist_ok=True)
+snapshots_path = Path('./results')
+snapshots_path.mkdir(exist_ok=True)
 
 
 if __name__ == '__main__':
     # Argument parsing.
-    task = Task.init(project_name="SurF'N", task_name="trains_plot")
+    task = Task.init(project_name="SurF'N", task_name="trains_plot", output_uri=str(snapshots_path))
     parser = argparse.ArgumentParser()
     parser.add_argument('--header')
     parser.add_argument('--agent', required=True)
