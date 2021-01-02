@@ -4,12 +4,12 @@ import tonic
 current_logger = None
 
 
-def initialize_trains_logger(trains_logger):
+def initialize_clearml_logger(clearml_logger):
     class TrainsLogger(tonic.logger.Logger):
         def store(self, key, value, stats=False):
             super().store(key, value, stats)
             # todo add trains logging
-            return trains_logger
+            return clearml_logger
 
     def _initialize(*args, **kwargs):
         global current_logger
@@ -25,5 +25,5 @@ def initialize_trains_logger(trains_logger):
     return _initialize, _get_current_logger
 
 
-def initialize(trains_logger):
-    tonic.logger.initialize, tonic.logger.get_current_logger = initialize_trains_logger(trains_logger)
+def initialize(clearml_logger):
+    tonic.logger.initialize, tonic.logger.get_current_logger = initialize_clearml_logger(clearml_logger)
