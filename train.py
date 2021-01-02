@@ -1,6 +1,7 @@
 """Script used to train agents."""
 
 import argparse
+from pathlib import Path
 from clearml import Task
 from utils import logger
 import os
@@ -8,12 +9,14 @@ import os
 from tonic.train import train
 
 
+snapshots_path = Path('./')
+snapshots_path.mkdir(exist_ok=True)
 os.chdir('./results')
 
 
 if __name__ == '__main__':
     # Argument parsing.
-    task = Task.init(project_name="SurF'N", task_name="trains_plot")
+    task = Task.init(project_name="SurF'N", task_name="trains_plot", output_uri=str(snapshots_path))
     parser = argparse.ArgumentParser()
     parser.add_argument('--header')
     parser.add_argument('--agent', required=True)
