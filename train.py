@@ -2,7 +2,7 @@
 
 import argparse
 from pathlib import Path
-from trains import Task
+from trains import Task, Logger
 from utils import logger
 
 from tonic.train import train
