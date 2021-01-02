@@ -4,12 +4,14 @@ import argparse
 from pathlib import Path
 from clearml import Task
 from utils import logger
+import os
 
 from tonic.train import train
 
 
 snapshots_path = Path('./results')
 snapshots_path.mkdir(exist_ok=True)
+os.chdir('./results')
 
 
 if __name__ == '__main__':
