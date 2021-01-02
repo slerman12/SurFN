@@ -43,7 +43,7 @@ def get_fittest(policy, log_probs, advantages, selection_rate=0.04, seed=None):
     # todo abs, sep back on ent after cl, momentum,pro temporary/dec, softmax, crit, diff selrs, dec-r, r-ns,
     logits = logits ** 2
 
-    # logits = torch.ones_like(logits)
+    logits = torch.ones_like(logits)
 
     # credit_sum[torch.isnan(fitness)] = 0
     # logits = credit_sum - min(credit_sum) + 0.001
