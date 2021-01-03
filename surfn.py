@@ -40,7 +40,7 @@ def get_fittest(policy, log_probs, advantages, selection_rate=0.04, seed=None):
     # _, selected = torch.topk(fitness, num_selected)
     logits = fitness - min(fitness) + 0.001
 
-    # todo abs, sep back on ent after cl, momentum,pro temporary/dec, softmax, crit, diff selrs, dec-r, r-ns,
+    # todo abs, sep back on ent after cl, momentum,pro temporary/dec, softmax, crit, diff selrs, dec-ran, r-ns, det hi
     logits = logits ** 2
 
     logits = torch.ones_like(logits)
