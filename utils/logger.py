@@ -4,20 +4,20 @@ current_logger = None
 
 
 def init_clearml_logger(clearml_logger):
-    class TrainsLogger(tonic.logger.Logger):
+    class ClearmlLogger(tonic.logger.Logger):
         def store(self, key, value, stats=False):
             super().store(key, value, stats)
             clearml_logger.report_scalar(key, key, value=value)
 
     def _initialize(*args, **kwargs):
         global current_logger
-        current_logger = TrainsLogger(*args, **kwargs)
+        current_logger = ClearmlLogger(*args, **kwargs)
         return current_logger
 
     def _get_current_logger():
         global current_logger
         if current_logger is None:
-            current_logger = TrainsLogger()
+            current_logger = ClearmlLogger()
         return current_logger
 
     def _dump(*args, **kwargs):
