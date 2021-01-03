@@ -12,11 +12,12 @@ from tonic.plot import plot
 
 snapshots_path = Path('./results')
 snapshots_path.mkdir(exist_ok=True)
+task = Task.init(project_name="SurF'N", task_name="plot", output_uri=str(snapshots_path))
+os.chdir('./results')
 
 
 if __name__ == '__main__':
     # Argument parsing.
-    task = Task.init(project_name="SurF'N", task_name="plot", output_uri=str(snapshots_path))
     parser = argparse.ArgumentParser()
     parser.add_argument('--paths', nargs='+', default=[])
     parser.add_argument('--x_axis', default='train/steps')
@@ -42,7 +43,6 @@ if __name__ == '__main__':
     parser.add_argument('--legend_marker_size', type=int, default=10)
     parser.add_argument('--backend', default=None)
     parser.add_argument('--dpi', type=int, default=150)
-    os.chdir('./results')
     args = parser.parse_args()
 
     # Backend selection, e.g. agg for non-GUI.
