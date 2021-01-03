@@ -7,7 +7,9 @@ def init_clearml_logger(clearml_logger):
     class ClearmlLogger(tonic.logger.Logger):
         def store(self, key, value, stats=False):
             super().store(key, value, stats)
-            clearml_logger.report_scalar(key, key, value=value)
+            if "steps" in self.epoch_dict:
+                iteration = self.epoch_dict["steps"][-1]
+                clearml_logger.report_scalar(key, key, iteration=iteration, value=value)
 
     def _initialize(*args, **kwargs):
         global current_logger
