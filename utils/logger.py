@@ -6,10 +6,13 @@ current_logger = None
 def init_clearml_logger(clearml_logger):
     class ClearmlLogger(tonic.logger.Logger):
         def store(self, key, value, stats=False):
+            if not hasattr(self, 'steps'):
+                self.steps = 0
             super().store(key, value, stats)
-            if key == "train/episode_score":
-                iteration = self.epoch_dict["train/steps"][-1] if "train/steps" in self.epoch_dict else 1
-                clearml_logger.report_scalar(key, key, iteration=iteration, value=value)
+            if key == "train/steps":
+                self.steps = value
+            elif key == "train/episode_score" or key == "train/steps_per_second":
+                clearml_logger.report_scalar(key, key, iteration=self.steps, value=value)
 
     def _initialize(*args, **kwargs):
         global current_logger
