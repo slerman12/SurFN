@@ -2,20 +2,23 @@
 
 import argparse
 from pathlib import Path
-from clearml import Task
-from utils import logger
 import os
 
 from tonic.train import train
 
+is_remote = not Path("/Users/samlerman").exists()
+if is_remote:
+    from clearml import Task
+    from utils import logger
 
-snapshots_path = Path('./results')
-snapshots_path.mkdir(exist_ok=True)
+    snapshots_path = Path('./results')
+    snapshots_path.mkdir(exist_ok=True)
+
+    task = Task.init(project_name="SurF'N", task_name="trains_plot", output_uri=str(snapshots_path))
 
 
 if __name__ == '__main__':
     # Argument parsing.
-    task = Task.init(project_name="SurF'N", task_name="trains_plot", output_uri=str(snapshots_path))
     parser = argparse.ArgumentParser()
     parser.add_argument('--header')
     parser.add_argument('--agent', required=True)
@@ -28,6 +31,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int)
     parser.add_argument('--name')
     args = vars(parser.parse_args())
-    logger.initialize(task.get_logger())
+    if is_remote:
+        logger.initialize(task.get_logger())
     os.chdir('./results')
     train(**args)

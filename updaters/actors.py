@@ -28,7 +28,7 @@ class StochasticPolicyGradientSurFN(updaters.StochasticPolicyGradient):
             distributions = self.model.actor(observations)
             new_log_probs = distributions.log_prob(actions).sum(dim=-1)
 
-            surfn.get_fittest(self.model.actor, new_log_probs, advantages)
+            surfn.set_fittest(self.model.actor, new_log_probs, advantages)
             self.optimizer.zero_grad()
 
             loss = -(advantages * new_log_probs).mean()
@@ -52,13 +52,33 @@ class StochasticPolicyGradientSurFN(updaters.StochasticPolicyGradient):
 
 
 class ClippedRatioSurFN(updaters.ClippedRatio):
+    def __init__(self, optimizer=None, ratio_clip=0.2, kl_threshold=0.015, entropy_coeff=0, gradient_clip=0,
+                 resample=False, repeat=False, reiterate=True, adv_run_rate=None, selection_dec_rate=None,
+                 selection_rate=0.04, min_adv=None, **kwargs):
+        super(ClippedRatioSurFN, self).__init__(optimizer=optimizer, ratio_clip=ratio_clip, kl_threshold=kl_threshold,
+                                                entropy_coeff=entropy_coeff, gradient_clip=gradient_clip)
+        self.probas = None
+        self.kwargs = kwargs
+        self.adv_run_avg = 0
+        self.advantages = None
+        self.resample = resample
+        self.repeat = repeat
+        self.reiterate = reiterate
+        self.adv_run_rate = adv_run_rate
+        self.selection_dec_rate = selection_dec_rate
+        self.selection_rate = selection_rate
+        self.min_adv = min_adv
+
     def initialize(self, model):
         super(ClippedRatioSurFN, self).initialize(model)
         autograd_hacks.add_hooks(self.model.actor)
 
-    def reset(self, seed):
-        self.seed = seed
-        self.is_fittest_computed = False
+    def reset(self):
+        self.probas = None
+        if self.advantages is not None and self.adv_run_rate:
+            self.adv_run_avg = (1 - self.adv_run_rate) * self.adv_run_avg + self.adv_run_rate * self.advantages.mean()
+        if self.selection_rate and self.selection_dec_rate:
+            self.selection_rate *= self.selection_dec_rate
 
     def __call__(self, observations, actions, advantages, log_probs):
         if (advantages == 0.).all():
@@ -77,9 +97,20 @@ class ClippedRatioSurFN(updaters.ClippedRatio):
             distributions = self.model.actor(observations)
             new_log_probs = distributions.log_prob(actions).sum(dim=-1)
 
-            self.is_fittest_computed or surfn.get_fittest(self.model.actor, new_log_probs, advantages, seed=self.seed)
-            self.is_fittest_computed or self.optimizer.zero_grad()
-            self.is_fittest_computed = True
+            if self.adv_run_rate:
+                self.advantages = advantages
+
+            self.min_adv = self.min_adv if type(self.min_adv) in (int, float) \
+                else max(self.adv_run_avg, 0) if self.min_adv else None
+
+            if self.resample or self.probas is None:
+                probas = surfn.set_fittest(self.model.actor, new_log_probs, advantages, self.optimizer, self.probas,
+                                           selection_rate=self.selection_rate, min_adv=self.min_adv, **self.kwargs)
+
+                if not self.repeat:
+                    self.probas = probas
+            elif not self.reiterate:
+                surfn.reset(self.model.actor)
 
             ratios_1 = torch.exp(new_log_probs - log_probs)
             surrogates_1 = advantages * ratios_1
