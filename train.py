@@ -9,9 +9,11 @@ import tonic
 from agents.surfn_ppo import SurFNPPO
 
 is_remote = not Path("/Users/samlerman").exists()
+debugged_logger = False
 if is_remote:
     from clearml import Task
-    from utils import logger
+    if debugged_logger:
+        from utils import logger
 
     snapshots_path = Path('./results')
     snapshots_path.mkdir(exist_ok=True)
@@ -126,7 +128,6 @@ if __name__ == '__main__':
     parser.add_argument("--env", type=none_or_str, default="AntBulletEnv-v0")
     parser.add_argument('--seed', type=int, default=0)
     args = parser.parse_args()
-    debugged_logger = False
     if is_remote and debugged_logger:
         logger.initialize(task.get_logger())
 
