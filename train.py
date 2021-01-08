@@ -107,8 +107,8 @@ if __name__ == '__main__':
     parser.add_argument("--resample", type=str2bool, nargs='?', const=True, default=False)
     parser.add_argument("--repeat", type=str2bool, nargs='?', const=True, default=False)
     parser.add_argument("--reiterate", type=str2bool, nargs='?', const=True,
-                        # default=True)
-                        default=False)
+                        default=True)
+                        # default=False)
     parser.add_argument("--adv_run_rate", type=none_or_float, default=None)
     parser.add_argument("--selection_dec_rate", type=none_or_float, default=None)
     parser.add_argument("--selection_rate", type=none_or_float, default=0.04)
