@@ -126,7 +126,8 @@ if __name__ == '__main__':
     parser.add_argument("--env", type=none_or_str, default="AntBulletEnv-v0")
     parser.add_argument('--seed', type=int, default=0)
     args = parser.parse_args()
-    if is_remote:
+    debugged_logger = False
+    if is_remote and debugged_logger:
         logger.initialize(task.get_logger())
 
     header = 'import tonic.torch; import sys; sys.path.append("{}")'.format(Path(__file__).parent.absolute())
