@@ -129,7 +129,7 @@ if __name__ == '__main__':
     if is_remote:
         logger.initialize(task.get_logger())
 
-    header = 'import tonic.torch'
+    header = 'import tonic.torch; import sys; sys.path.append()'.format(Path(__file__).parent.absolute())
     agent = SurFNPPO(**{key: vars(args)[key] for key in vars(args) if key not in ["env", "seed"]})
     environment = 'tonic.environments.Bullet("{}")'.format(args.env)
     trainer = 'tonic.Trainer(epoch_steps=50000, steps=int(5e6))'
