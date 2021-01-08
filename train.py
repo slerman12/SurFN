@@ -8,8 +8,7 @@ import tonic
 
 from agents.surfn_ppo import SurFNPPO
 
-cur_path = Path(__file__)
-print(cur_path.absolute())
+cur_path = Path(__file__).absolute()
 is_remote = not Path("/Users/samlerman").exists()
 debugged_logger = True
 if is_remote:
@@ -133,7 +132,7 @@ if __name__ == '__main__':
     if is_remote and debugged_logger:
         logger.initialize(task.get_logger())
 
-    header = 'import tonic.torch; import sys; sys.path.append("{}")'.format(cur_path.parent.absolute())
+    header = 'import tonic.torch; import sys; sys.path.append("{}")'.format(Path(__file__).parent.absolute())
     agent = SurFNPPO(**{key: vars(args)[key] for key in vars(args) if key not in ["env", "seed"]})
     environment = 'tonic.environments.Bullet("{}")'.format(args.env)
     trainer = 'tonic.Trainer(epoch_steps=50000, steps=int(5e6))'
