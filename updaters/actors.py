@@ -53,8 +53,8 @@ class StochasticPolicyGradientSurFN(updaters.StochasticPolicyGradient):
 
 class ClippedRatioSurFN(updaters.ClippedRatio):
     def __init__(self, optimizer=None, ratio_clip=0.2, kl_threshold=0.015, entropy_coeff=0, gradient_clip=0,
-                 resample=False, repeat=False, reiterate=True, adv_run_rate=None, selection_dec_rate=None,
-                 selection_rate=0.04, min_adv=None, **kwargs):
+                 resample=False, repeat=False, reiterate=False, adv_run_rate=None, selection_dec_rate=None,
+                 selection_rate=0.04, min_adv=0, **kwargs):
         super(ClippedRatioSurFN, self).__init__(optimizer=optimizer, ratio_clip=ratio_clip, kl_threshold=kl_threshold,
                                                 entropy_coeff=entropy_coeff, gradient_clip=gradient_clip)
         self.probas = None
@@ -101,7 +101,7 @@ class ClippedRatioSurFN(updaters.ClippedRatio):
                 self.advantages = advantages
 
             self.min_adv = self.min_adv if type(self.min_adv) in (int, float) \
-                else max(self.adv_run_avg, 0) if self.min_adv else None
+                else max(self.adv_run_avg, 0) if self.adv_run_rate is not None else None
 
             if self.resample or self.probas is None:
                 probas = surfn.set_fittest(self.model.actor, new_log_probs, advantages, self.optimizer, self.probas,
@@ -119,6 +119,7 @@ class ClippedRatioSurFN(updaters.ClippedRatio):
             ratios_2 = torch.clamp(ratios_1, ratio_low, ratio_high)
             surrogates_2 = advantages * ratios_2
             loss = -(torch.min(surrogates_1, surrogates_2)).mean()
+            # todo loss wo a (rat?), hook a, then ent sep (no hook, ree) ... rat?
             entropy = distributions.entropy().mean()
             if self.entropy_coeff != 0:
                 loss -= self.entropy_coeff * entropy

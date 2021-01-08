@@ -14,7 +14,7 @@ if is_remote:
     snapshots_path = Path('./results')
     snapshots_path.mkdir(exist_ok=True)
 
-    task = Task.init(project_name="SurF'N", task_name="trains_plot", output_uri=str(snapshots_path))
+    task = Task.init(project_name="SurF'N", task_name="run", output_uri=str(snapshots_path))
 
 
 if __name__ == '__main__':
