@@ -54,7 +54,7 @@ class StochasticPolicyGradientSurFN(updaters.StochasticPolicyGradient):
 class ClippedRatioSurFN(updaters.ClippedRatio):
     def __init__(self, optimizer=None, ratio_clip=0.2, kl_threshold=0.015, entropy_coeff=0, gradient_clip=0,
                  resample=False, repeat=False, reiterate=False, adv_run_rate=None, selection_dec_rate=None,
-                 selection_rate=0.04, min_adv=0, **kwargs):
+                 selection_rate=0.04, min_adv=None, **kwargs):
         super(ClippedRatioSurFN, self).__init__(optimizer=optimizer, ratio_clip=ratio_clip, kl_threshold=kl_threshold,
                                                 entropy_coeff=entropy_coeff, gradient_clip=gradient_clip)
         self.probas = None

@@ -33,6 +33,9 @@ params['probas_dist'] = ["sm", "sq", "sum"]
 params['temp'] = [.05, .1, .2, .7]
 params['nonzero'] = [True, False]
 params["select_method"] = ["numpy", "torch"]
+params["env"] = ["AntBulletEnv-v0", "HalfCheetahBulletEnv-vo", "HopperBulletEnv-v0", "ReacherBulletEnv-v0",
+                 "Walker2DBulletEnv-v0"]
+params["seed"] = [0, 1, 2]
 
 
 # This is a simple random search
