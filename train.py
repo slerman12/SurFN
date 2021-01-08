@@ -93,7 +93,7 @@ if __name__ == '__main__':
             raise argparse.ArgumentTypeError('Boolean value expected.')
 
     def none_or_float(value):
-        if value == 'None':
+        if value == 'None' or value is None:
             return None
         return float(value)
 
@@ -105,25 +105,29 @@ if __name__ == '__main__':
     # Argument parsing.
     parser = argparse.ArgumentParser()
     parser.add_argument("--resample", type=str2bool, nargs='?', const=True, default=False)
-    parser.add_argument("--repeat", type=str2bool, nargs='?', const=True, default=True)
-    parser.add_argument("--reiterate", type=str2bool, nargs='?', const=True, default=True)
-                        # , default=True)
+    parser.add_argument("--repeat", type=str2bool, nargs='?', const=True, default=False)
+    parser.add_argument("--reiterate", type=str2bool, nargs='?', const=True,
+                        # default=True)
+                        default=False)
     parser.add_argument("--adv_run_rate", type=none_or_float, default=None)
     parser.add_argument("--selection_dec_rate", type=none_or_float, default=None)
     parser.add_argument("--selection_rate", type=none_or_float, default=0.04)
-    parser.add_argument("--min_adv", type=none_or_float, default=0)
-                        # default=None)
+    parser.add_argument("--min_adv", type=none_or_float,
+                        # default=0)
+                        default=None)
     parser.add_argument("--gradient_agg", type=str2bool, nargs='?', const=True, default=False)
     parser.add_argument("--do_surfn", type=str2bool, nargs='?', const=True, default=True)
     parser.add_argument("--uniform_sampling", type=str2bool, nargs='?', const=True, default=False)
     parser.add_argument("--deterministic", type=str2bool, nargs='?', const=True, default=False)
-    parser.add_argument("--credit_method", type=none_or_str, default=None)
+    parser.add_argument("--credit_method", type=none_or_str,
+                        default=None)
                         # default="bt-gc")
-    parser.add_argument("--credit_method_2", type=none_or_str, default="relu")
+    parser.add_argument("--credit_method_2", type=none_or_str,
+                        default="relu")
                         # default="shift")
     parser.add_argument("--fitness_dist", type=none_or_str, default="sum")
     parser.add_argument("--probas_dist", type=none_or_str, default="sq")
-    parser.add_argument("--temp", type=none_or_float, default=-.2)
+    parser.add_argument("--temp", type=none_or_float, default=0.2)
     parser.add_argument("--nonzero", type=str2bool, nargs='?', const=True, default=True)
     parser.add_argument("--select_method", type=none_or_str, default="numpy")
     parser.add_argument("--env", type=none_or_str, default="AntBulletEnv-v0")
@@ -145,6 +149,7 @@ if __name__ == '__main__':
     # for key in vars(args):
     #     name = "{}_{}_".format(key, vars(args)[key])
     name = "{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(*list(vars(args).values()))
+    print(name)
 
     os.chdir('./results')
     train(header, agent, environment, trainer, before_training, after_training, parallel, sequential, seed, name)
