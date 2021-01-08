@@ -9,7 +9,7 @@ import tonic
 from agents.surfn_ppo import SurFNPPO
 
 is_remote = not Path("/Users/samlerman").exists()
-debugged_logger = False
+debugged_logger = True
 if is_remote:
     from clearml import Task
     if debugged_logger:
@@ -60,6 +60,7 @@ def train(
 
     # Initialize the logger to save data to the path environment/name/seed.
     path = os.path.join(environment_name, name, str(seed))
+    print(path)
     tonic.logger.initialize(path, script_path=__file__, config=args)
 
     # Build the trainer.
