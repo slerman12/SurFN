@@ -61,8 +61,7 @@ def train(
 
     # Initialize the logger to save data to the path environment/name/seed.
     path = os.path.join(environment_name, name, str(seed))
-    print(cur_path)
-    tonic.logger.initialize(path, script_path=cur_path, config=args)
+    tonic.logger.initialize(path, script_path=cur_path.absolute(), config=args)
 
     # Build the trainer.
     trainer = eval(trainer)
