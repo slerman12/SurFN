@@ -9,17 +9,6 @@ import tonic
 from agents.surfn_ppo import SurFNPPO
 
 cur_path = Path(__file__)
-is_remote = not Path("/Users/samlerman").exists()
-debugged_logger = True
-if is_remote:
-    from clearml import Task
-    if debugged_logger:
-        from utils import logger
-
-    snapshots_path = Path('./results')
-    snapshots_path.mkdir(exist_ok=True)
-
-    task = Task.init(project_name="SurF'N", task_name="run", output_uri=str(snapshots_path))
 
 
 def train(
@@ -82,6 +71,18 @@ def train(
 
 
 if __name__ == '__main__':
+    is_remote = not Path("/Users/samlerman").exists()
+    debugged_logger = True
+    if is_remote:
+        from clearml import Task
+        if debugged_logger:
+            from utils import logger
+
+        snapshots_path = Path('./results')
+        snapshots_path.mkdir(exist_ok=True)
+
+        task = Task.init(project_name="SurF'N", task_name="run", output_uri=str(snapshots_path))
+
     def str2bool(v):
         if isinstance(v, bool):
             return v
