@@ -25,6 +25,6 @@ print(num_cpus)
 #     results = processing_pool.map(wrapper, args)
 
 # use starmap and call `run` directly
-with multiprocessing.Pool(8) as processing_pool:
+with multiprocessing.Pool(num_cpus) as processing_pool:
     processing_pool.starmap(run, args)
 
