@@ -1,5 +1,5 @@
 """Script used to train agents."""
-
+import argparse
 from pathlib import Path
 import os
 import tonic
@@ -107,3 +107,13 @@ def run(env, alg, agg, seed):
 
     os.chdir('./results')
     train(header, agent, environment, trainer, before_training, after_training, parallel, sequential, seed, name)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--agg", type=str, default='sign')
+    parser.add_argument("--alg", type=str)
+    parser.add_argument("--env", type=str)
+    parser.add_argument('--seed', type=int, default=0)
+    args = parser.parse_args()
+    run(env=args.env, alg=args.alg, agg=args.agg, seed=args.seed)
