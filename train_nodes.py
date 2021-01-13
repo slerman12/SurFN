@@ -105,7 +105,7 @@ def run(env, alg, agg, seed):
     # name = "PPO_0"
     print(name)
 
-    os.chdir('./results')
+    # os.chdir('./results')
     train(header, agent, environment, trainer, before_training, after_training, parallel, sequential, seed, name)
 
 
