@@ -7,7 +7,7 @@ from tonic.torch.agents import PPO, TRPO, A2C, SAC
 
 
 def run(env, alg, agg, seed):
-    # cur_path = Path(__file__).absolute()
+    cur_path = Path(__file__).absolute()
     # snapshots_path = Path('./results')
     # snapshots_path.mkdir(exist_ok=True)
     #
