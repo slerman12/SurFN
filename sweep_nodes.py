@@ -14,6 +14,17 @@ args = list(itertools.product(*[envs, algs, aggs, seeds]))
 num_cpus = multiprocessing.cpu_count()
 print(num_cpus)
 
+
+# def wrapper(env_alg_agg_seed):
+#     env, alg, agg, seed = env_alg_agg_seed
+#     return run(env=env, alg=alg, agg=agg, seed=seed)
+#
+#
+# with multiprocessing.Pool(num_cpus) as processing_pool:
+#     # accumulate results in a dictionary
+#     results = processing_pool.map(wrapper, args)
+
+# use starmap and call `run` directly
 with multiprocessing.Pool(num_cpus) as processing_pool:
-    processing_pool.map(run, args)
+    processing_pool.starmap(run, args)
 
