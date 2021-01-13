@@ -3,7 +3,7 @@ import multiprocessing
 from train_nodes import run
 import itertools
 
-envs = ["AntBulletEnv-v0", "HalfCheetahBulletEnv-vo", "HopperBulletEnv-v0", "ReacherBulletEnv-v0",
+envs = ["AntBulletEnv-v0", "HalfCheetahBulletEnv-v0", "HopperBulletEnv-v0", "ReacherBulletEnv-v0",
         "Walker2DBulletEnv-v0", "InvertedDoublePendulumBulletEnv-v0"]
 algs = ["PPO", "A2C"]
 aggs = ["sign", None]
