@@ -36,8 +36,9 @@ class StochasticPolicyGradientGradAgg(updaters.StochasticPolicyGradient):
                     param.grad = torch.sign(param.grad)
 
             entropy = distributions.entropy().mean()
+            entropy_loss = 0
             if self.entropy_coeff != 0:
-                entropy_loss = -self.entropy_coeff * entropy
+                entropy_loss -= self.entropy_coeff * entropy
                 entropy_loss.backward()
 
             loss = policy_loss + entropy_loss
