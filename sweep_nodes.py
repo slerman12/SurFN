@@ -25,7 +25,7 @@ if __name__ == '__main__':
     num_cpus = multiprocessing.cpu_count()
     print(num_cpus)
 
-    os.chdir("/Users/samlerman/Code/SurF'N/results")
+    # os.chdir("/Users/samlerman/Code/SurF'N/results")
     # def wrapper(env_alg_agg_seed):
     #     env, alg, agg, seed = env_alg_agg_seed
     #     return run(env=env, alg=alg, agg=agg, seed=seed)
