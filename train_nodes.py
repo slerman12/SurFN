@@ -7,18 +7,18 @@ from tonic.torch.agents import PPO, TRPO, A2C, SAC
 
 
 def run(env, alg, agg, seed):
-    cur_path = Path(__file__).absolute()
-    snapshots_path = Path('./results')
-    snapshots_path.mkdir(exist_ok=True)
-
-    is_remote = not Path("/Users/samlerman").exists()
-    debugged_logger = True
-    if is_remote:
-        from clearml import Task
-        if debugged_logger:
-            from utils import logger
-
-        task = Task.init(project_name="SurF'N", task_name="run", output_uri=str(snapshots_path))
+    # cur_path = Path(__file__).absolute()
+    # snapshots_path = Path('./results')
+    # snapshots_path.mkdir(exist_ok=True)
+    #
+    # is_remote = not Path("/Users/samlerman").exists()
+    # debugged_logger = True
+    # if is_remote:
+    #     from clearml import Task
+    #     if debugged_logger:
+    #         from utils import logger
+    #
+    #     task = Task.init(project_name="SurF'N", task_name="run", output_uri=str(snapshots_path))
 
     def train(
             header, agent, environment, trainer, before_training, after_training,
@@ -78,8 +78,8 @@ def run(env, alg, agg, seed):
         if after_training:
             exec(after_training)
 
-    if is_remote and debugged_logger:
-        logger.initialize(task.get_logger())
+    # if is_remote and debugged_logger:
+    #     logger.initialize(task.get_logger())
 
     from updaters.actors_grad_agg import ClippedRatioGradAgg, TrustRegionPolicyGradientGradAgg, StochasticPolicyGradientGradAgg, TwinCriticSoftDeterministicPolicyGradientGradAgg
 
