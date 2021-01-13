@@ -3,11 +3,17 @@ import multiprocessing
 from train_nodes import run
 import itertools
 
-envs = ["AntBulletEnv-v0", "HalfCheetahBulletEnv-v0", "HopperBulletEnv-v0", "ReacherBulletEnv-v0",
-        "Walker2DBulletEnv-v0", "InvertedDoublePendulumBulletEnv-v0"]
-algs = ["PPO", "A2C"]
+envs = ["AntBulletEnv-v0", "HalfCheetahBulletEnv-v0", "Walker2DBulletEnv-v0",
+        # ]
+        "ReacherBulletEnv-v0", "HopperBulletEnv-v0", "InvertedDoublePendulumBulletEnv-v0"]
+algs = ["PPO",
+        # ]
+        "A2C"]
 aggs = ["sign", None]
-seeds = [random.randint(0, 200), random.randint(200, 400), random.randint(400, 600), random.randint(600, 800), random.randint(800, 1000)]
+seeds = [random.randint(0, 200),
+         # random.randint(200, 400),
+         ]
+        # random.randint(400, 600), random.randint(600, 800), random.randint(800, 1000)]
 
 args = list(itertools.product(*[envs, algs, aggs, seeds]))
 
@@ -25,6 +31,6 @@ print(num_cpus)
 #     results = processing_pool.map(wrapper, args)
 
 # use starmap and call `run` directly
-with multiprocessing.Pool(num_cpus - 5) as processing_pool:
+with multiprocessing.Pool(num_cpus) as processing_pool:
     processing_pool.starmap(run, args)
 
