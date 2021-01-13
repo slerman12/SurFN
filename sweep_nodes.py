@@ -2,6 +2,7 @@ import random
 import multiprocessing
 from train_nodes import run
 import itertools
+import os
 
 envs = ["AntBulletEnv-v0", "HalfCheetahBulletEnv-v0", "Walker2DBulletEnv-v0",
         # ]
@@ -31,6 +32,9 @@ print(num_cpus)
 #     results = processing_pool.map(wrapper, args)
 
 # use starmap and call `run` directly
-with multiprocessing.Pool(num_cpus) as processing_pool:
-    processing_pool.starmap(run, args)
+# with multiprocessing.Pool(num_cpus) as processing_pool:
+#     processing_pool.starmap(run, args)
+
+for arg in args:
+    os.system('python3 train_nodes.py --env {} --alg {} --agg {} --seed {}'.format(*arg))
 
