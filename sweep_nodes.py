@@ -35,6 +35,12 @@ print(num_cpus)
 # with multiprocessing.Pool(num_cpus) as processing_pool:
 #     processing_pool.starmap(run, args)
 
-for arg in args:
+def go(arg):
     os.system('python3 ../train_nodes.py --env {} --alg {} --agg {} --seed {}'.format(*arg))
+
+with multiprocessing.Pool(num_cpus) as processing_pool:
+    processing_pool.map(go, args)
+
+# for arg in args:
+#     os.system('python3 ../train_nodes.py --env {} --alg {} --agg {} --seed {}'.format(*arg))
 
