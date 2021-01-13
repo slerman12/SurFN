@@ -36,5 +36,5 @@ print(num_cpus)
 #     processing_pool.starmap(run, args)
 
 for arg in args:
-    os.system('python3 train_nodes.py --env {} --alg {} --agg {} --seed {}'.format(*arg))
+    os.system('python3 ../train_nodes.py --env {} --alg {} --agg {} --seed {}'.format(*arg))
 
