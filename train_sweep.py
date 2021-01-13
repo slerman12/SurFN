@@ -105,61 +105,64 @@ if __name__ == '__main__':
 
     # Argument parsing.
     parser = argparse.ArgumentParser()
-    parser.add_argument("--resample", type=str2bool, nargs='?', const=True, default=False)
-    parser.add_argument("--repeat", type=str2bool, nargs='?', const=True,
-    #                     default=False)
-                        default=True)
-    parser.add_argument("--reiterate", type=str2bool, nargs='?', const=True,
-                        # default=True)
+    parser.add_argument("--resample", type=str2bool, nargs='?', const=True,
                         default=False)
+                        # default=True)
+    parser.add_argument("--repeat", type=str2bool, nargs='?', const=True,
+                        default=False)
+                        # default=True)
+    parser.add_argument("--reiterate", type=str2bool, nargs='?', const=True,
+                        default=True)
+                        # default=False)
     parser.add_argument("--adv_run_rate", type=none_or_float, default=None)
     parser.add_argument("--selection_dec_rate", type=none_or_float, default=None)
-    parser.add_argument("--selection_rate", type=none_or_float, default=0.04)
-    parser.add_argument("--min_adv", type=none_or_float,
-                        # default=0)
+    parser.add_argument("--uniform_sampling", type=str2bool, nargs='?', const=True, default=False)
+    parser.add_argument("--deterministic", type=str2bool, nargs='?', const=True, default=False)
+    parser.add_argument("--grad_credit_type", type=none_or_str,
+                        default="g")
+                        # default=None)
+    parser.add_argument("--grad_credit_op", type=none_or_str,
                         default=None)
-    parser.add_argument("--gradient_agg", type=str2bool, nargs='?', const=True,
-                        default=False)  # todo
-                        # default="sign")
-    parser.add_argument("--do_surfn", type=str2bool, nargs='?', const=True,
-                        default=True)
-                        # default=False)
-    parser.add_argument("--uniform_sampling", type=str2bool, nargs='?', const=True, default=False) # todo?
-    parser.add_argument("--deterministic", type=str2bool, nargs='?', const=True, default=False)  # todo?
-    parser.add_argument("--credit_method", type=none_or_str,
+    parser.add_argument("--weight_credit_op", type=none_or_str,
                         # default=None)
-                        # default="gwa")
-                        # default="bt-gc")
-                        # default="relu-bt-relu-gc")
-                        # default="g-unit-norm")
-                        default="surfn4mean")
-    parser.add_argument("--credit_method_2", type=none_or_str,
-                        # default="relu")
-                        # default="shift")  # todo
+                        default="raw")
+    parser.add_argument("--credit_op", type=none_or_str,
+                        default="relu")
                         # default=None)
-                        # default="abs")
-                        default="surfn4")
-    parser.add_argument("--fitness_dist", type=none_or_str,
-                        # default="sum")
-                        # default="grad-avg-adv-shift")
-                        # default="grad-avg-adv-min-shift")
+    parser.add_argument("--credit_dist_op", type=none_or_str,
+                        default=None)
+    parser.add_argument("--adv_credit_type", type=none_or_str,
+                        default="sum")
                         # default=None)
-                        default="surfn4")
-    parser.add_argument("--div_al", type=str2bool, nargs='?', const=True,
-                        # default=False)
-                        default=True)
-    parser.add_argument("--probas_dist", type=none_or_str, default="sq")
-    parser.add_argument("--temp", type=none_or_float, default=0.2)
+    parser.add_argument("--align_div_by", type=str2bool, nargs='?', const=True,
+                        default=False)
+                        # default=True)
+                        # default="norm")
+    parser.add_argument("--min_adv", type=none_or_float,
+                        default=0)
+                        # default=None)
+    parser.add_argument("--probas_dist", type=none_or_str,
+                        default="squared")
+                        # default=None)
+    parser.add_argument("--selection_rate", type=none_or_float, default=0.04)
     parser.add_argument("--nonzero", type=str2bool, nargs='?', const=True, default=True)
     parser.add_argument("--select_method", type=none_or_str,
                         default="numpy")
                         # default="torch")
+    parser.add_argument("--divide_by_fitness", type=str2bool, nargs='?', const=True,
+                        default=False)
+    parser.add_argument("--gradient_norm", type=str2bool, nargs='?', const=True,
+                        default=False)
+    parser.add_argument("--gradient_agg", type=str2bool, nargs='?', const=True,
+                        default=False)
+    parser.add_argument("--alg", type=none_or_str,
+                        default="SurFNPPO")
     parser.add_argument("--env", type=none_or_str,
                         # default="AntBulletEnv-v0")
                         default="Walker2DBulletEnv-v0")
                         # default="HalfCheetahBulletEnv-v0")
-    # default="AntBulletEnv-v0")
-    # default="AntBulletEnv-v0")
+                        # default="AntBulletEnv-v0")
+                        # default="AntBulletEnv-v0")
     parser.add_argument('--seed', type=int,
                         default=0)
                         # default=2)
@@ -168,7 +171,8 @@ if __name__ == '__main__':
         logger.initialize(task.get_logger())
 
     header = 'import tonic.torch; import sys; sys.path.append("{}")'.format(Path(__file__).parent.absolute())
-    agent = SurFNPPO(**{key: vars(args)[key] for key in vars(args) if key not in ["env", "seed"]})
+    if args.alg == "SurFNPPO":
+        agent = SurFNPPO(**{key: vars(args)[key] for key in vars(args) if key not in ["env", "seed", "alg"]})
     # agent = PPO()
     environment = 'tonic.environments.Bullet("{}")'.format(args.env)
     trainer = 'tonic.Trainer(epoch_steps=50000, steps=int(5e6))'
@@ -177,12 +181,8 @@ if __name__ == '__main__':
     parallel = 1
     sequential = 1
     seed = args.seed
-    # name = ""
-    # for key in vars(args):
-    #     name = "{}_{}_".format(key, vars(args)[key])
-    name = "{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(*list(vars(args).values()))
-    # name = "PPO_again-0"
-    # name = "bilbo"
+    name = "{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}_{}".format(*list(vars(args).values()))
+    # name = "PPO_0"
     print(name)
 
     os.chdir('./results')

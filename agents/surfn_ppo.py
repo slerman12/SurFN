@@ -1,5 +1,5 @@
 from tonic.torch import agents
-from updaters.actors import ClippedRatioSurFN
+from updaters.actors_sweep import ClippedRatioSurFN
 
 
 class SurFNPPO(agents.PPO):

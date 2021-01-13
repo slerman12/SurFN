@@ -3,7 +3,9 @@
 import argparse
 import os
 from pathlib import Path
-from clearml import Task
+is_remote = not Path("/Users/samlerman").exists()
+if is_remote:
+    from clearml import Task
 import time
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -12,14 +14,18 @@ from tonic.plot import plot
 
 snapshots_path = Path('./results')
 snapshots_path.mkdir(exist_ok=True)
-task = Task.init(project_name="SurF'N", task_name="plot", output_uri=str(snapshots_path))
+if is_remote:
+    task = Task.init(project_name="SurF'N", task_name="plot", output_uri=str(snapshots_path))
 os.chdir('./results')
 
 
 if __name__ == '__main__':
     # Argument parsing.
     parser = argparse.ArgumentParser()
-    parser.add_argument('--paths', nargs='+', default=[])
+    parser.add_argument('--paths', nargs='+',
+                        # default=["/Users/samlerman/Code/SurF'N/results/AntBulletEnv-v0"])
+                        default=["/Users/samlerman/Code/SurF'N/results/Walker2DBulletEnv-v0"])
+                        # default=["/Users/samlerman/Code/SurF'N/results/HalfCheetahBulletEnv-v0"])
     parser.add_argument('--x_axis', default='train/steps')
     parser.add_argument('--y_axis', default='test/episode_score')
     parser.add_argument('--x_label')
@@ -30,7 +36,8 @@ if __name__ == '__main__':
     parser.add_argument('--columns', type=int)
     parser.add_argument('--x_min', type=int)
     parser.add_argument('--x_max', type=int)
-    parser.add_argument('--baselines', nargs='+')
+    parser.add_argument('--baselines', nargs='+',
+                        default="PPO")
     parser.add_argument('--baselines_source', default='tensorflow')
     parser.add_argument('--name')
     parser.add_argument('--save_formats', nargs='*', default=['pdf', 'png'])

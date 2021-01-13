@@ -1,7 +1,7 @@
 import torch
 from mushroom_rl.algorithms.actor_critic.deep_actor_critic.ppo import PPO
 from mushroom_rl.utils.minibatches import minibatch_generator
-import surfn
+import surfn_2
 import autograd_hacks
 
 
@@ -18,8 +18,8 @@ class SurFNPPO(PPO):
                     self._batch_size, obs, act, adv, old_log_p):
                 self._optimizer.zero_grad()
                 new_log_probs = self.policy.log_prob_t(obs_i, act_i)
-                probas_i = surfn.set_fittest(self.policy, new_log_probs, adv_i, self._optimizer,
-                                             probas=probas[i] if not epoch else None)
+                probas_i = surfn_2.set_fittest(self.policy, new_log_probs, adv_i, self._optimizer,
+                                               probas=probas[i] if not epoch else None)
                 probas.append(probas_i)
                 i += 1
                 prob_ratio = torch.exp(
