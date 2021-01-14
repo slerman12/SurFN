@@ -42,7 +42,7 @@ if __name__ == '__main__':
     #     processing_pool.starmap(run, args)
 
     def go(arg):
-        os.system('python3 ../sbatch.py --params "--env {} --seed {}" --cpu --name "{}"'.format(*arg, str(arg)))
+        os.system('python3 ../sbatch.py --params "--env {} --seed {}" --cpu --name "{}_{}"'.format(*arg, *arg))
     #
     #
     for arg in args:
