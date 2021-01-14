@@ -13,7 +13,7 @@ parser.add_argument('--biggest-gpu', action='store_true', default=False,
                     help='uses V100 GPU')
 parser.add_argument('--file', type=str, default="../train_sweep.py")
 parser.add_argument('--params', type=str, default="")
-parser.add_argument('--module', type=str, default="anaconda3/2020.07")
+parser.add_argument('--module', type=str, default="python3/3.8.6")
 args = parser.parse_args()
 
 
@@ -25,7 +25,6 @@ def slurm_script_generalized():
 #SBATCH --mem=10gb 
 {}
 module load {}
-module load python3/3.8.6
 python3 {} {}
 """.format("-c 1" if args.cpu else "-p gpu", "" if args.cpu else "--gres=gpu", args.name, args.name,
            "#SBATCH -C K80" if args.bigger_gpu else "#SBATCH -C V100" if args.biggest_gpu else "",
