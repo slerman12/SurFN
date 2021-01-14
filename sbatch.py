@@ -25,6 +25,7 @@ def slurm_script_generalized():
 #SBATCH --mem=10gb 
 {}
 module load {}
+module load torch
 python3 {} {}
 """.format("-c 1" if args.cpu else "-p gpu", "" if args.cpu else "--gres=gpu", args.name, args.name,
            "#SBATCH -C K80" if args.bigger_gpu else "#SBATCH -C V100" if args.biggest_gpu else "",
