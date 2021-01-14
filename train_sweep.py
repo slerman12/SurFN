@@ -125,8 +125,8 @@ if __name__ == '__main__':
     parser.add_argument("--grad_credit_op", type=none_or_str,
                         default=None)
     parser.add_argument("--weight_credit_op", type=none_or_str,
-                        # default=None)
-                        default="raw")
+                        default=None)
+                        # default="raw")
     parser.add_argument("--credit_op", type=none_or_str,
                         default="relu")
                         # default=None)
@@ -140,8 +140,8 @@ if __name__ == '__main__':
                         # default=True)
                         # default="norm")
     parser.add_argument("--min_adv", type=none_or_float,
-                        default=0)
-                        # default=None)
+                        # default=0)
+                        default=None)
     parser.add_argument("--probas_dist", type=none_or_str,
                         default="squared")
                         # default=None)

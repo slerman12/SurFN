@@ -20,15 +20,19 @@ args = parser.parse_args()
 def slurm_script_generalized():
     return r"""#!/bin/bash
 #SBATCH {}
-#SBATCH -p csxu -A cxu22_lab {}
+{}
 #SBATCH -t 5-00:00:00 -o ./{}.log -J {}
 #SBATCH --mem=10gb 
 {}
+module load tmux
+tmux new -s {}
+tmux attach -t {}
 module load {}
 python3 {} {}
-""".format("-c 1" if args.cpu else "-p gpu", "" if args.cpu else "--gres=gpu", args.name, args.name,
+""".format("-c 1" if args.cpu else "-p gpu", "" if args.cpu else "#SBATCH -p csxu -A cxu22_lab --gres=gpu",
+           args.name, args.name,
            "#SBATCH -C K80" if args.bigger_gpu else "#SBATCH -C V100" if args.biggest_gpu else "",
-           args.module, args.file, args.params)
+           args.name, args.name, args.module, args.file, args.params)
 
 
 with open("sbatch_script", "w") as file:
