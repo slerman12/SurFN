@@ -11,7 +11,7 @@ parser.add_argument('--bigger-gpu', action='store_true', default=False,
                     help='uses K80 GPU')
 parser.add_argument('--biggest-gpu', action='store_true', default=False,
                     help='uses V100 GPU')
-parser.add_argument('--file', type=str, default="train_sweep.py")
+parser.add_argument('--file', type=str, default="../train_sweep.py")
 parser.add_argument('--params', type=str, default="")
 parser.add_argument('--module', type=str, default="anaconda3/2020.07")
 args = parser.parse_args()
