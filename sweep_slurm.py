@@ -17,10 +17,10 @@ if __name__ == '__main__':
     # aggs = ["sign",
     #         # ]
     #         None]
-    seeds = [random.randint(0, 200),
-             random.randint(200, 400),
+    seeds = [143,
+             233,
              # ]
-            random.randint(400, 600), random.randint(600, 800), random.randint(800, 1000)]
+            547, 719, 863]
 
     args = list(itertools.product(*[envs, seeds]))
 
