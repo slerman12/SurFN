@@ -20,7 +20,7 @@ args = parser.parse_args()
 def slurm_script_generalized():
     return r"""#!/bin/bash
 #SBATCH {}
-#SBATCH -p csxu -A csxu {}
+#SBATCH -p csxu -A cxu22_lab {}
 #SBATCH -t 5-00:00:00 -o ./{}.log -J {}
 #SBATCH --mem=10gb 
 {}
