@@ -13,7 +13,8 @@ cur_path = Path(__file__).absolute()
 snapshots_path = Path('./results')
 snapshots_path.mkdir(exist_ok=True)
 
-is_remote = not Path("/Users/samlerman").exists()
+# is_remote = not Path("/Users/samlerman").exists()
+is_remote = False
 debugged_logger = True
 if is_remote:
     from clearml import Task
